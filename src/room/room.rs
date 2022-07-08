@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use crate::coords::DungeonCoordinates;
 use crate::direction::Direction3D;
 use super::pathfinding::connected_tile_sets;
 use super::tile::DungeonTile;
@@ -12,7 +11,6 @@ pub struct DungeonRoom {
     pub pathing: Vec<usize>,
     pub rows: i32,
     pub columns: i32,
-    pub dungeon_coords: Option<DungeonCoordinates>,
     pub exit_directions: Vec<Direction3D>,
     pub stair_up: bool,
     pub stair_down: bool,
@@ -26,7 +24,6 @@ impl Default for DungeonRoom {
             tiles: vec![],
             pathing: vec![],
             exits: vec![],
-            dungeon_coords: None,
             exit_directions: vec![],
             stair_up: false,
             stair_down: false,

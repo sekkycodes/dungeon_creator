@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 
-use crate::map::math::Position;
+use crate::room::math::Position;
 
 use crate::direction::Direction3D;
 

@@ -3,9 +3,9 @@ use std::ops::Range;
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 
-use crate::map::math::Position;
+use crate::{room::math::Position, floor::floor_architecture::create_floor_layout};
 
-use super::{layout::{DungeonLayoutConfig, DungeonLayout}, coords::{DungeonCoordinates, StairCoordinates}, floor_architecture::create_floor_layout};
+use super::{layout::{DungeonLayoutConfig, DungeonLayout}, coords::{DungeonCoordinates, StairCoordinates}};
 
 
 pub struct DungeonArchitect {

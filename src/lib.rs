@@ -1,6 +1,7 @@
 pub mod coords;
 pub mod direction;
-pub mod map;
+pub mod floor;
+pub mod room;
 pub mod dungeon;
 
 #[cfg(test)]

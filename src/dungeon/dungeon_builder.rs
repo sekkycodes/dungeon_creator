@@ -1,6 +1,6 @@
-use crate::{direction::Direction3D, map::tile::DungeonTile};
+use crate::{direction::Direction3D, room::tile::DungeonTile, floor::floor_architecture::FloorLayout};
 
-use super::{floor_architecture::FloorLayout, layout::{DungeonLayout, DungeonLayoutConfig}, dungeon_architecture::DungeonArchitect, room::ArrangedDungeonRoom, coords::DungeonCoordinates, room_builder::RoomBuilder};
+use super::{layout::{DungeonLayout, DungeonLayoutConfig}, dungeon_architecture::DungeonArchitect, room::ArrangedDungeonRoom, coords::DungeonCoordinates, room_builder::RoomBuilder};
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 

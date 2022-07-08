@@ -1,6 +1,8 @@
 use std::ops::Range;
 
-use super::{coords::{DungeonCoordinates, StairCoordinates}, floor_architecture::FloorLayout};
+use crate::floor::floor_architecture::FloorLayout;
+
+use super::{coords::{DungeonCoordinates, StairCoordinates}};
 
 #[derive(Clone, Debug)]
 pub struct DungeonLayoutConfig {

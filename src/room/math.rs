@@ -114,4 +114,16 @@ mod test {
         let rect = Rect::new(5, 8, 5, 7);
         assert_eq!(5..=7, rect.cols());
     }
+
+    #[test]
+    fn rect_calculates_its_center_position() {
+        let rect = Rect::new(4, 6, 4, 6);
+        assert_eq!(Position::new(5, 5), rect.center());
+    }
+
+    #[test]
+    fn rect_rounds_down_center_position() {
+        let rect = Rect::new(4, 5, 4, 5);
+        assert_eq!(Position::new(4, 4), rect.center());
+    }
 }
