@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 
@@ -34,6 +36,28 @@ impl Default for FloorRoom {
 pub struct RoomCoordinates {
     pub col: i32,
     pub row: i32,
+}
+
+impl Ord for RoomCoordinates {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.row > other.row {
+            return Ordering::Greater;
+        } else if self.row < other.row {
+            return Ordering::Less;
+        } else if self.col > other.col {
+            return Ordering::Greater;
+        } else if self.col < other.col {
+            return Ordering::Less;
+        }
+
+        Ordering::Equal
+    }
+}
+
+impl PartialOrd for RoomCoordinates {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl RoomCoordinates {
