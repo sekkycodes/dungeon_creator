@@ -1,4 +1,7 @@
-use crate::{room::{tile::DungeonTile, room::DungeonRoom}, direction::Direction3D};
+use crate::{
+    direction::Direction3D,
+    room::{room::DungeonRoom, tile::DungeonTile},
+};
 
 use super::coords::DungeonCoordinates;
 

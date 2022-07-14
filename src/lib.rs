@@ -1,8 +1,7 @@
-pub mod coords;
 pub mod direction;
+pub mod dungeon;
 pub mod floor;
 pub mod room;
-pub mod dungeon;
 
 #[cfg(test)]
 mod tests {
