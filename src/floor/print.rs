@@ -26,7 +26,10 @@ pub fn print_floor_layout(floor_layout: &FloorLayout) -> String {
 
 #[cfg(test)]
 mod test {
-    use crate::{floor::floor_architecture::{FloorLayout, FloorRoom, RoomCoordinates}, direction::Direction3D};
+    use crate::{
+        direction::Direction3D,
+        floor::floor_architecture::{FloorLayout, FloorRoom, RoomCoordinates},
+    };
 
     use super::*;
 
@@ -57,7 +60,7 @@ mod test {
                     coords: RoomCoordinates { col: 0, row: 1 },
                     exits: vec![Direction3D::Right],
                     ..Default::default()
-                }
+                },
             ],
         }
     }

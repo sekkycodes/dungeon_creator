@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
-use crate::direction::Direction3D;
 use super::pathfinding::connected_tile_sets;
 use super::tile::DungeonTile;
+use crate::direction::Direction3D;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct DungeonRoom {

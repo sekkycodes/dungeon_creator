@@ -3,10 +3,12 @@ use std::ops::Range;
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 
-use crate::{room::math::Position, floor::floor_architecture::create_floor_layout};
+use crate::{floor::floor_architecture::create_floor_layout, room::math::Position};
 
-use super::{layout::{DungeonLayoutConfig, DungeonLayout}, coords::{DungeonCoordinates, StairCoordinates}};
-
+use super::{
+    coords::{DungeonCoordinates, StairCoordinates},
+    layout::{DungeonLayout, DungeonLayoutConfig},
+};
 
 pub struct DungeonArchitect {
     pub config: DungeonLayoutConfig,

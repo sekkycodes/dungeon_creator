@@ -1,6 +1,10 @@
 use rand_pcg::Pcg64;
 
-use crate::{room::{room::DungeonRoom, tile::DungeonTile}, direction::Direction3D, floor::floor_architecture::FloorRoom};
+use crate::{
+    direction::Direction3D,
+    floor::floor_architecture::FloorRoom,
+    room::{room::DungeonRoom, tile::DungeonTile},
+};
 
 pub trait RoomBuilder {
     fn create_room(&self, rng: &mut Pcg64, room_config: &FloorRoom) -> DungeonRoom;
