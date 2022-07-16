@@ -21,16 +21,12 @@ impl FloorGrid {
             self.max_widths[cell.col] = cell.width;
             self.set_left_paddings(cell.col);
         }
-
-        for lp in self.left_pads.iter_mut() {
-            lp[cell.col] = cell.width;
-        }
     }
 
     fn set_top_paddings(&mut self, row: usize) {
         let height = self.max_heights[row];
 
-        for i in 0..self.top_pads[0].len() {
+        for i in 0..self.heights.len() {
             if self.heights[row][i] > 0 {
                 self.top_pads[row][i] = (height - self.heights[row][i]) / 2;
             } else {
@@ -42,7 +38,7 @@ impl FloorGrid {
     fn set_left_paddings(&mut self, col: usize) {
         let width = self.max_widths[col];
 
-        for i in 0..self.left_pads.len() {
+        for i in 0..self.widths.len() {
             if self.widths[i][col] > 0 {
                 self.left_pads[i][col] = (width - self.widths[i][col]) / 2;
             } else {
@@ -90,7 +86,7 @@ pub mod test {
     }
 
     #[test]
-    pub fn floor_grid_adjusts_paddings_on_insert() {
+    pub fn floor_grid_adjusts_paddings_of_empty_rooms_on_insert() {
         let mut fg = FloorGrid::new(2, 2);
 
         fg.insert(FloorCell {
@@ -101,9 +97,49 @@ pub mod test {
         });
 
         assert_eq!(3, fg.top_pads[0][0]);
+        assert_eq!(5, fg.left_pads[1][1]);
+    }
+
+    #[test]
+    pub fn floor_grid_calculates_padding_of_inserted_room() {
+        let mut fg = FloorGrid::new(2, 2);
+
+        fg.insert(FloorCell {
+            col: 1,
+            row: 0,
+            height: 3,
+            width: 5,
+        });
+
         assert_eq!(0, fg.top_pads[1][0]);
         assert_eq!(0, fg.left_pads[0][0]);
-        assert_eq!(5, fg.left_pads[0][1]);
+    }
+
+    #[test]
+    pub fn floor_grid_adjusts_padding_of_other_filled_rooms_on_insert() {
+        let mut fg = FloorGrid::new(2, 2);
+
+        fg.insert(FloorCell {
+            col: 1,
+            row: 0,
+            height: 3,
+            width: 3,
+        });
+        fg.insert(FloorCell {
+            col: 0,
+            row: 1,
+            height: 5,
+            width: 5,
+        });
+        fg.insert(FloorCell {
+            col: 0,
+            row: 0,
+            height: 7,
+            width: 7,
+        });
+
+        assert_eq!(2, fg.top_pads[0][1]);
+        assert_eq!(1, fg.left_pads[1][0]);
     }
 
     #[test]
