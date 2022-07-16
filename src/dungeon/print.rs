@@ -1,161 +1,119 @@
-pub struct FloorGrid {
-    heights: Vec<Vec<usize>>,
-    widths: Vec<Vec<usize>>,
-    left_pads: Vec<Vec<usize>>,
-    top_pads: Vec<Vec<usize>>,
-    max_heights: Vec<usize>,
-    max_widths: Vec<usize>,
+use crate::{
+    floor::grid::{FloorCell, FloorGrid},
+    room::print::print_room,
+};
+
+use super::room::ArrangedDungeonRoom;
+
+pub fn print_floor(rooms: &Vec<ArrangedDungeonRoom>) -> String {
+    let grid = fill_floor_grid(rooms);
+
+    let mut output = String::new();
+
+    for cur_row in 0..grid.heights.len() {
+        let cur_room = rooms
+            .iter()
+            .find(|r| r.dungeon_coords.row == cur_row as i32)
+            .unwrap();
+        output.push_str(&print_room(
+            cur_room.rows as usize,
+            cur_room.columns as usize,
+            cur_room.tiles.clone(),
+        ))
+    }
+
+    output
 }
 
-impl FloorGrid {
-    pub fn insert(&mut self, cell: FloorCell) {
-        self.heights[cell.row][cell.col] = cell.height;
-        self.widths[cell.row][cell.col] = cell.width;
-
-        if self.max_heights[cell.row] < cell.height {
-            self.max_heights[cell.row] = cell.height;
-            self.set_top_paddings(cell.row);
-        }
-
-        if self.max_widths[cell.col] < cell.width {
-            self.max_widths[cell.col] = cell.width;
-            self.set_left_paddings(cell.col);
-        }
+pub fn fill_floor_grid(rooms: &Vec<ArrangedDungeonRoom>) -> FloorGrid {
+    if rooms.len() == 0 {
+        return FloorGrid::new(0, 0);
     }
 
-    fn set_top_paddings(&mut self, row: usize) {
-        let height = self.max_heights[row];
+    let (max_row, max_col) = get_max_dimensions(rooms);
+    let mut grid = FloorGrid::new(max_row + 1, max_col + 1);
 
-        for i in 0..self.heights.len() {
-            if self.heights[row][i] > 0 {
-                self.top_pads[row][i] = (height - self.heights[row][i]) / 2;
-            } else {
-                self.top_pads[row][i] = height;
-            }
-        }
+    for room in rooms {
+        grid.insert(FloorCell {
+            col: room.dungeon_coords.col as usize,
+            row: room.dungeon_coords.row as usize,
+            height: room.rows as usize,
+            width: room.columns as usize,
+        })
     }
 
-    fn set_left_paddings(&mut self, col: usize) {
-        let width = self.max_widths[col];
-
-        for i in 0..self.widths.len() {
-            if self.widths[i][col] > 0 {
-                self.left_pads[i][col] = (width - self.widths[i][col]) / 2;
-            } else {
-                self.left_pads[i][col] = width;
-            }
-        }
-    }
-
-    pub fn new(rows: usize, cols: usize) -> FloorGrid {
-        FloorGrid {
-            heights: vec![vec![0; cols]; rows],
-            widths: vec![vec![0; cols]; rows],
-            left_pads: vec![vec![0; cols]; rows],
-            top_pads: vec![vec![0; cols]; rows],
-            max_heights: vec![0; rows],
-            max_widths: vec![0; cols],
-        }
-    }
+    grid
 }
 
-pub struct FloorCell {
-    col: usize,
-    row: usize,
-    height: usize,
-    width: usize,
+fn get_max_dimensions(rooms: &Vec<ArrangedDungeonRoom>) -> (usize, usize) {
+    let mut max_row = 0;
+    let mut max_col = 0;
+
+    for room in rooms {
+        let coords = room.dungeon_coords;
+        if coords.row > max_row {
+            max_row = coords.row;
+        }
+        if coords.col > max_col {
+            max_col = coords.col;
+        }
+    }
+
+    (max_row as usize, max_col as usize)
 }
 
 #[cfg(test)]
 pub mod test {
+    use crate::{
+        dungeon::{coords::DungeonCoordinates, room::ArrangedDungeonRoom},
+        room::tile::DungeonTile,
+    };
+
     use super::*;
 
     #[test]
-    pub fn floor_grid_inserts_dimensions() {
-        let mut fg = FloorGrid::new(2, 2);
+    pub fn prints_empty_dungeon() {
+        let rooms = vec![];
 
-        fg.insert(FloorCell {
-            col: 0,
-            row: 1,
-            height: 3,
-            width: 5,
-        });
+        let output = print_floor(&rooms);
 
-        assert_eq!(3, fg.heights[1][0]);
-        assert_eq!(5, fg.widths[1][0]);
+        assert_eq!("", output);
     }
 
     #[test]
-    pub fn floor_grid_adjusts_paddings_of_empty_rooms_on_insert() {
-        let mut fg = FloorGrid::new(2, 2);
+    pub fn prints_single_floor_dungeon_with_one_room() {
+        let rooms = vec![create_room(0, 0, 3)];
 
-        fg.insert(FloorCell {
-            col: 1,
-            row: 0,
-            height: 3,
-            width: 5,
-        });
+        let output = print_floor(&rooms);
 
-        assert_eq!(3, fg.top_pads[0][0]);
-        assert_eq!(5, fg.left_pads[1][1]);
+        assert_eq!("...\n...\n...\n", output);
     }
 
     #[test]
-    pub fn floor_grid_calculates_padding_of_inserted_room() {
-        let mut fg = FloorGrid::new(2, 2);
+    pub fn fills_floor_grid_with_rooms() {
+        let rooms = vec![
+            create_room(0, 0, 3),
+            create_room(0, 1, 3),
+            create_room(1, 1, 5),
+        ];
 
-        fg.insert(FloorCell {
-            col: 1,
-            row: 0,
-            height: 3,
-            width: 5,
-        });
+        let grid = fill_floor_grid(&rooms);
 
-        assert_eq!(0, fg.top_pads[1][0]);
-        assert_eq!(0, fg.left_pads[0][0]);
+        assert_eq!(3, grid.heights[0][0]);
+        assert_eq!(5, grid.heights[1][1]);
     }
 
-    #[test]
-    pub fn floor_grid_adjusts_padding_of_other_filled_rooms_on_insert() {
-        let mut fg = FloorGrid::new(2, 2);
-
-        fg.insert(FloorCell {
-            col: 1,
-            row: 0,
-            height: 3,
-            width: 3,
-        });
-        fg.insert(FloorCell {
-            col: 0,
-            row: 1,
-            height: 5,
-            width: 5,
-        });
-        fg.insert(FloorCell {
-            col: 0,
-            row: 0,
-            height: 7,
-            width: 7,
-        });
-
-        assert_eq!(2, fg.top_pads[0][1]);
-        assert_eq!(1, fg.left_pads[1][0]);
-    }
-
-    #[test]
-    pub fn floor_grid_recognizes_larger_dimensions() {
-        let mut fg = FloorGrid::new(2, 2);
-
-        fg.insert(FloorCell {
-            col: 1,
-            row: 0,
-            height: 3,
-            width: 5,
-        });
-
-        assert_eq!(3, fg.max_heights[0]);
-        assert_eq!(0, fg.max_heights[1]);
-        assert_eq!(0, fg.max_widths[0]);
-        assert_eq!(5, fg.max_widths[1]);
+    fn create_room(row: i32, col: i32, size: usize) -> ArrangedDungeonRoom {
+        ArrangedDungeonRoom {
+            columns: size as i32,
+            rows: size as i32,
+            dungeon_coords: DungeonCoordinates {
+                row,
+                col,
+                ..Default::default()
+            },
+            tiles: vec![DungeonTile::Floor; size * size],
+            ..Default::default()
+        }
     }
 }
