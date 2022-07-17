@@ -6,23 +6,56 @@ use crate::{
 use super::room::ArrangedDungeonRoom;
 
 pub fn print_floor(rooms: &Vec<ArrangedDungeonRoom>) -> String {
+    if rooms.len() == 0 {
+        return String::new();
+    }
+
     let grid = fill_floor_grid(rooms);
 
     let mut output = String::new();
 
     for cur_row in 0..grid.heights.len() {
-        let cur_room = rooms
+        let row_rooms = rooms
             .iter()
-            .find(|r| r.dungeon_coords.row == cur_row as i32)
-            .unwrap();
-        output.push_str(&print_room(
-            cur_room.rows as usize,
-            cur_room.columns as usize,
-            cur_room.tiles.clone(),
-        ))
+            .filter(|r| r.dungeon_coords.row == cur_row as i32)
+            .collect();
+
+        output.push_str(&print_floor_column(
+            row_rooms,
+            &grid.left_pads[cur_row],
+            &grid.top_pads[cur_row],
+        ));
     }
 
     output
+}
+
+pub fn print_floor_column(
+    rooms: Vec<&ArrangedDungeonRoom>,
+    left_pads: &Vec<usize>,
+    top_pads: &Vec<usize>,
+) -> String {
+    let height = rooms.iter().map(|r| r.rows).max().unwrap();
+    let mut room_outputs = vec![String::new(); (height + 1) as usize];
+    for cur_col in 0..left_pads.len() {
+        let cur_room = rooms
+            .iter()
+            .find(|r| r.dungeon_coords.col == cur_col as i32)
+            .unwrap();
+
+        for (idx, room_row) in print_room(
+            cur_room.rows as usize,
+            cur_room.columns as usize,
+            cur_room.tiles.clone(),
+        )
+        .split('\n')
+        .enumerate()
+        {
+            room_outputs[idx].push_str(&room_row);
+        }
+    }
+
+    room_outputs.join("\n")
 }
 
 pub fn fill_floor_grid(rooms: &Vec<ArrangedDungeonRoom>) -> FloorGrid {
@@ -87,6 +120,15 @@ pub mod test {
         let output = print_floor(&rooms);
 
         assert_eq!("...\n...\n...\n", output);
+    }
+
+    #[test]
+    pub fn prints_single_floor_dungeon_with_multiple_rooms() {
+        let rooms = vec![create_room(0, 0, 3), create_room(0, 1, 3)];
+
+        let output = print_floor(&rooms);
+
+        assert_eq!("......\n......\n......\n", output);
     }
 
     #[test]
