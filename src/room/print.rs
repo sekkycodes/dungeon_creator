@@ -1,7 +1,21 @@
 use super::tile::DungeonTile;
 
-pub fn print_room(rows: usize, cols: usize, tiles: Vec<DungeonTile>) -> String {
+pub fn print_room(
+    rows: usize,
+    cols: usize,
+    tiles: Vec<DungeonTile>,
+    vertical_padding: usize,
+    horizontal_padding: usize,
+) -> String {
     let mut output = String::new();
+
+    let empty_line = " ".repeat(rows + horizontal_padding * 2);
+    for _ in 0..vertical_padding {
+        output.push_str(&empty_line);
+        output.push('\n');
+    }
+
+    let padding = " ".repeat(horizontal_padding);
     for r in 0..rows {
         let row_str: String = tiles
             .iter()
@@ -24,8 +38,19 @@ pub fn print_room(rows: usize, cols: usize, tiles: Vec<DungeonTile>) -> String {
             })
             .collect();
 
+        output.push_str(&padding);
         output.push_str(&row_str);
+        output.push_str(&padding);
         output.push('\n');
+    }
+
+    for _ in 0..vertical_padding {
+        output.push_str(&empty_line);
+        output.push('\n');
+    }
+
+    if output.ends_with('\n') {
+        output.pop();
     }
 
     output
@@ -45,10 +70,10 @@ mod test {
             ..Default::default()
         };
 
-        let result = print_room(room.rows as usize, room.columns as usize, room.tiles);
+        let result = print_room(room.rows as usize, room.columns as usize, room.tiles, 0, 0);
 
         println!("{}", result);
-        assert_eq!("...\n...\n...\n", result);
+        assert_eq!("...\n...\n...", result);
     }
 
     #[test]
@@ -70,9 +95,24 @@ mod test {
             ..Default::default()
         };
 
-        let result = print_room(room.rows as usize, room.columns as usize, room.tiles);
+        let result = print_room(room.rows as usize, room.columns as usize, room.tiles, 0, 0);
 
         println!("{}", result);
-        assert_eq!("#e#\n.^v\n#e#\n", result);
+        assert_eq!("#e#\n.^v\n#e#", result);
+    }
+
+    #[test]
+    fn prints_room_with_padding() {
+        let room = DungeonRoom {
+            tiles: vec![DungeonTile::Floor; 9],
+            columns: 3,
+            rows: 3,
+            ..Default::default()
+        };
+
+        let result = print_room(room.rows as usize, room.columns as usize, room.tiles, 1, 2);
+
+        println!("{}", result);
+        assert_eq!("       \n  ...  \n  ...  \n  ...  \n       ", result);
     }
 }

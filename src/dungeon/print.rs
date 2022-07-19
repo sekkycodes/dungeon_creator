@@ -13,6 +13,7 @@ pub fn print_floor(rooms: &Vec<ArrangedDungeonRoom>) -> String {
     let grid = fill_floor_grid(rooms);
 
     let mut output = String::new();
+    output.push('\n');
 
     for cur_row in 0..grid.heights.len() {
         let row_rooms = rooms
@@ -25,6 +26,8 @@ pub fn print_floor(rooms: &Vec<ArrangedDungeonRoom>) -> String {
             &grid.left_pads[cur_row],
             &grid.top_pads[cur_row],
         ));
+
+        output.push('\n');
     }
 
     output
@@ -36,7 +39,7 @@ pub fn print_floor_column(
     top_pads: &Vec<usize>,
 ) -> String {
     let height = rooms.iter().map(|r| r.rows).max().unwrap();
-    let mut room_outputs = vec![String::new(); (height + 1) as usize];
+    let mut room_outputs = vec![String::new(); (height) as usize];
     for cur_col in 0..left_pads.len() {
         let cur_room = rooms
             .iter()
@@ -47,11 +50,17 @@ pub fn print_floor_column(
             cur_room.rows as usize,
             cur_room.columns as usize,
             cur_room.tiles.clone(),
+            top_pads[cur_col],
+            left_pads[cur_col],
         )
         .split('\n')
         .enumerate()
         {
+            if room_outputs[idx] == "" {
+                room_outputs[idx].push(' ');
+            }
             room_outputs[idx].push_str(&room_row);
+            room_outputs[idx].push(' ');
         }
     }
 
@@ -119,7 +128,7 @@ pub mod test {
 
         let output = print_floor(&rooms);
 
-        assert_eq!("...\n...\n...\n", output);
+        assert_eq!("\n ... \n ... \n ... \n", output);
     }
 
     #[test]
@@ -128,7 +137,7 @@ pub mod test {
 
         let output = print_floor(&rooms);
 
-        assert_eq!("......\n......\n......\n", output);
+        assert_eq!("\n ... ... \n ... ... \n ... ... \n", output);
     }
 
     #[test]
