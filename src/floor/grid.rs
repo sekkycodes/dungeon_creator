@@ -16,22 +16,28 @@ impl FloorGrid {
             self.max_heights[cell.row] = cell.height;
             self.set_top_paddings(cell.row);
         }
+        self.set_top_padding(cell.row, cell.col, self.max_heights[cell.row]);
 
         if self.max_widths[cell.col] < cell.width {
             self.max_widths[cell.col] = cell.width;
             self.set_left_paddings(cell.col);
         }
+        self.set_left_padding(cell.row, cell.col, self.max_widths[cell.col]);
     }
 
     fn set_top_paddings(&mut self, row: usize) {
         let height = self.max_heights[row];
 
         for i in 0..self.heights.len() {
-            if self.heights[row][i] > 0 {
-                self.top_pads[row][i] = (height - self.heights[row][i]) / 2;
-            } else {
-                self.top_pads[row][i] = height;
-            }
+            self.set_top_padding(row, i, height);
+        }
+    }
+
+    fn set_top_padding(&mut self, row: usize, col: usize, max_height: usize) {
+        if self.heights[row][col] > 0 {
+            self.top_pads[row][col] = (max_height - self.heights[row][col]) / 2;
+        } else {
+            self.top_pads[row][col] = max_height;
         }
     }
 
@@ -39,11 +45,15 @@ impl FloorGrid {
         let width = self.max_widths[col];
 
         for i in 0..self.widths.len() {
-            if self.widths[i][col] > 0 {
-                self.left_pads[i][col] = (width - self.widths[i][col]) / 2;
-            } else {
-                self.left_pads[i][col] = width;
-            }
+            self.set_left_padding(i, col, width);
+        }
+    }
+
+    fn set_left_padding(&mut self, row: usize, col: usize, max_width: usize) {
+        if self.widths[row][col] > 0 {
+            self.left_pads[row][col] = (max_width - self.widths[row][col]) / 2;
+        } else {
+            self.left_pads[row][col] = max_width;
         }
     }
 
@@ -101,18 +111,38 @@ pub mod test {
     }
 
     #[test]
-    pub fn floor_grid_calculates_padding_of_inserted_room() {
+    pub fn floor_grid_calculates_padding_of_inserted_room_same_sized() {
         let mut fg = FloorGrid::new(2, 2);
 
         fg.insert(FloorCell {
             col: 1,
             row: 0,
             height: 3,
-            width: 5,
+            width: 3,
+        });
+        fg.insert(FloorCell {
+            col: 0,
+            row: 0,
+            height: 3,
+            width: 3,
+        });
+        fg.insert(FloorCell {
+            col: 0,
+            row: 1,
+            height: 3,
+            width: 3,
         });
 
-        assert_eq!(0, fg.top_pads[1][0]);
+        // check room cell paddings
+        assert_eq!(0, fg.top_pads[0][1]);
+        assert_eq!(0, fg.left_pads[0][1]);
+        assert_eq!(0, fg.top_pads[0][0]);
         assert_eq!(0, fg.left_pads[0][0]);
+        assert_eq!(0, fg.top_pads[1][0]);
+        assert_eq!(0, fg.left_pads[1][0]);
+        // check empty cell paddings
+        assert_eq!(3, fg.top_pads[1][1]);
+        assert_eq!(3, fg.left_pads[1][1]);
     }
 
     #[test]
