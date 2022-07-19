@@ -5,20 +5,54 @@ use crate::{
 
 use super::room::ArrangedDungeonRoom;
 
-pub fn print_floor(rooms: &Vec<ArrangedDungeonRoom>) -> String {
+pub fn print_dungeon(rooms: Vec<&ArrangedDungeonRoom>) -> String {
     if rooms.len() == 0 {
         return String::new();
     }
 
-    let grid = fill_floor_grid(rooms);
+    let mut output = String::new();
+    let max_floor = rooms.iter().map(|r| r.dungeon_coords.floor).max().unwrap();
+    for floor in 0..max_floor + 1 {
+        let headline = floor_headline(floor);
+        output.push_str(&headline);
+
+        let floor_rooms: Vec<&ArrangedDungeonRoom> = rooms
+            .iter()
+            .filter(|r| r.dungeon_coords.floor == floor)
+            .map(|r| *r)
+            .collect();
+
+        output.push_str(&print_floor(floor_rooms));
+
+        output.push('\n');
+    }
+
+    output
+}
+
+fn floor_headline(floor: i32) -> String {
+    format!("=== FLOOR {} ===\n", floor)
+}
+
+pub fn print_floor(rooms: Vec<&ArrangedDungeonRoom>) -> String {
+    if rooms.len() == 0 {
+        return String::new();
+    }
+
+    let grid = fill_floor_grid(rooms.clone());
 
     let mut output = String::new();
     output.push('\n');
 
     for cur_row in 0..grid.heights.len() {
+        if cur_row > 0 {
+            output.push('\n');
+        }
+
         let row_rooms = rooms
             .iter()
             .filter(|r| r.dungeon_coords.row == cur_row as i32)
+            .map(|r| *r)
             .collect();
 
         output.push_str(&print_floor_column(
@@ -72,12 +106,12 @@ pub fn print_floor_column(
     room_outputs.join("\n")
 }
 
-pub fn fill_floor_grid(rooms: &Vec<ArrangedDungeonRoom>) -> FloorGrid {
+pub fn fill_floor_grid(rooms: Vec<&ArrangedDungeonRoom>) -> FloorGrid {
     if rooms.len() == 0 {
         return FloorGrid::new(0, 0);
     }
 
-    let (max_row, max_col) = get_max_dimensions(rooms);
+    let (max_row, max_col) = get_max_dimensions(rooms.clone());
     let mut grid = FloorGrid::new(max_row + 1, max_col + 1);
 
     for room in rooms {
@@ -92,7 +126,7 @@ pub fn fill_floor_grid(rooms: &Vec<ArrangedDungeonRoom>) -> FloorGrid {
     grid
 }
 
-fn get_max_dimensions(rooms: &Vec<ArrangedDungeonRoom>) -> (usize, usize) {
+fn get_max_dimensions(rooms: Vec<&ArrangedDungeonRoom>) -> (usize, usize) {
     let mut max_row = 0;
     let mut max_col = 0;
 
@@ -119,28 +153,40 @@ pub mod test {
     use super::*;
 
     #[test]
+    pub fn prints_empty_floor() {
+        let rooms = vec![];
+
+        let output = print_floor(rooms);
+
+        assert_eq!("", output);
+    }
+
+    #[test]
     pub fn prints_empty_dungeon() {
         let rooms = vec![];
 
-        let output = print_floor(&rooms);
+        let output = print_dungeon(rooms);
 
         assert_eq!("", output);
     }
 
     #[test]
     pub fn prints_single_floor_dungeon_with_one_room() {
-        let rooms = vec![create_room(0, 0, 3)];
+        let room = create_room(0, 0, 0, 3);
+        let rooms = vec![&room];
 
-        let output = print_floor(&rooms);
+        let output = print_floor(rooms);
 
         assert_eq!("\n ... \n ... \n ... \n", output);
     }
 
     #[test]
     pub fn prints_single_floor_dungeon_with_multiple_rooms() {
-        let rooms = vec![create_room(0, 0, 3), create_room(0, 1, 3)];
+        let room1 = create_room(0, 0, 0, 3);
+        let room2 = create_room(0, 1, 0, 3);
+        let rooms = vec![&room1, &room2];
 
-        let output = print_floor(&rooms);
+        let output = print_floor(rooms);
 
         assert_eq!("\n ... ... \n ... ... \n ... ... \n", output);
     }
@@ -149,7 +195,7 @@ pub mod test {
     pub fn prints_single_floor_dungeon_with_multiple_differently_sized_rooms() {
         let rooms = create_three_room_floor();
 
-        let output = print_floor(&rooms);
+        let output = print_floor(rooms.iter().collect());
 
         assert_eq!("\n ...  ...  \n ...  ...  \n ...  ...  \n\n     ..... \n     ..... \n     ..... \n     ..... \n     ..... \n", output);
     }
@@ -158,28 +204,41 @@ pub mod test {
     pub fn fills_floor_grid_with_rooms() {
         let rooms = create_three_room_floor();
 
-        let grid = fill_floor_grid(&rooms);
+        let grid = fill_floor_grid(rooms.iter().collect());
 
         assert_eq!(3, grid.heights[0][0]);
         assert_eq!(3, grid.heights[0][1]);
         assert_eq!(5, grid.heights[1][1]);
     }
 
+    #[test]
+    pub fn prints_dungeon_with_multiple_floors() {
+        let room1 = create_room(0, 0, 0, 3);
+        let room2 = create_room(0, 1, 0, 5);
+        let room3 = create_room(0, 1, 1, 3);
+        let rooms = vec![&room1, &room2, &room3];
+
+        let output = print_dungeon(rooms);
+
+        assert_eq!("=== FLOOR 0 ===\n\n     ..... \n ... ..... \n ... ..... \n ... ..... \n     ..... \n\n=== FLOOR 1 ===\n\n  ... \n  ... \n  ... \n\n", output);
+    }
+
     fn create_three_room_floor() -> Vec<ArrangedDungeonRoom> {
         vec![
-            create_room(0, 0, 3),
-            create_room(0, 1, 3),
-            create_room(1, 1, 5),
+            create_room(0, 0, 0, 3),
+            create_room(0, 1, 0, 3),
+            create_room(1, 1, 0, 5),
         ]
     }
 
-    fn create_room(row: i32, col: i32, size: usize) -> ArrangedDungeonRoom {
+    fn create_room(row: i32, col: i32, floor: i32, size: usize) -> ArrangedDungeonRoom {
         ArrangedDungeonRoom {
             columns: size as i32,
             rows: size as i32,
             dungeon_coords: DungeonCoordinates {
                 row,
                 col,
+                floor,
                 ..Default::default()
             },
             tiles: vec![DungeonTile::Floor; size * size],
