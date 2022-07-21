@@ -1,5 +1,7 @@
 use crate::{
-    direction::Direction3D, floor::floor_architecture::FloorLayout, room::tile::DungeonTile,
+    direction::Direction3D,
+    floor::floor_architecture::FloorLayout,
+    room::{room_builder::RoomBuilder, tile::DungeonTile},
 };
 
 use super::{
@@ -7,7 +9,6 @@ use super::{
     dungeon_architecture::DungeonArchitect,
     layout::{DungeonLayout, DungeonLayoutConfig},
     room::ArrangedDungeonRoom,
-    room_builder::RoomBuilder,
 };
 use rand::prelude::*;
 use rand_pcg::Pcg64;

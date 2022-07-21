@@ -75,6 +75,22 @@ impl DungeonRoom {
         }
     }
 
+    pub fn close_side(&mut self, direction: Direction3D) {
+        let tile_idxs = self.side_indexes(&direction);
+        let mut changed = false;
+        for idx in tile_idxs {
+            if self.tiles[idx] != DungeonTile::Wall {
+                self.tiles[idx] = DungeonTile::Wall;
+                self.exits.retain(|x| *x != idx);
+                changed = true;
+            }
+        }
+
+        if changed {
+            self.pathing();
+        }
+    }
+
     pub fn pathing(&mut self) {
         let connected_tiles = connected_tile_sets(self);
         self.pathing = connected_tiles
@@ -294,6 +310,35 @@ mod test {
 
         assert_eq!(sut.in_bounds(0, 0), true);
         assert_eq!(sut.in_bounds(sut.columns - 1, sut.rows - 1), true);
+    }
+
+    #[test]
+    pub fn closes_exits_to_one_side_of_room() {
+        let mut room = DungeonRoom {
+            columns: 3,
+            rows: 3,
+            exit_directions: vec![Direction3D::Left, Direction3D::Right],
+            tiles: vec![
+                DungeonTile::Wall,
+                DungeonTile::Wall,
+                DungeonTile::Wall,
+                DungeonTile::Floor,
+                DungeonTile::Floor,
+                DungeonTile::Floor,
+                DungeonTile::Wall,
+                DungeonTile::Wall,
+                DungeonTile::Wall,
+            ],
+            exits: vec![3, 5],
+            pathing: vec![3, 4, 5],
+            ..Default::default()
+        };
+
+        room.close_side(Direction3D::Left);
+
+        assert_eq!(1, room.exit_directions.len());
+        assert_eq!(Direction3D::Right, room.exit_directions[0]);
+        assert_eq!(DungeonTile::Wall, room.tiles[3]);
     }
 
     fn build_sut() -> DungeonRoom {
