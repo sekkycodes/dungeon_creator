@@ -1,4 +1,5 @@
 pub mod automata;
+pub mod drunkard;
 pub mod math;
 pub mod pathfinding;
 pub mod print;
