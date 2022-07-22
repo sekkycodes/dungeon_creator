@@ -7,8 +7,8 @@ use super::{math::Rect, room::DungeonRoom, room_builder::RoomBuilder, tile::Dung
 
 #[derive(Clone, Debug)]
 pub struct RectanglesRoomBuilder {
-    pub rows: i32,
-    pub cols: i32,
+    pub rows: usize,
+    pub cols: usize,
     pub granularity: Granularity,
 }
 
@@ -50,11 +50,11 @@ impl RoomBuilder for RectanglesRoomBuilder {
         room
     }
 
-    fn get_rows(&self) -> i32 {
+    fn get_rows(&self) -> usize {
         self.rows
     }
 
-    fn get_cols(&self) -> i32 {
+    fn get_cols(&self) -> usize {
         self.cols
     }
 }
@@ -86,8 +86,8 @@ impl RectanglesRoomBuilder {
 
     fn new_rect(
         &self,
-        min: i32,
-        max: i32,
+        min: usize,
+        max: usize,
         rng: &mut Pcg64,
         existing_rects: &Vec<Rect>,
     ) -> Option<Rect> {
@@ -102,7 +102,7 @@ impl RectanglesRoomBuilder {
         Some(rect)
     }
 
-    fn create_rect(&self, min: i32, max: i32, rng: &mut Pcg64) -> Rect {
+    fn create_rect(&self, min: usize, max: usize, rng: &mut Pcg64) -> Rect {
         let col_size = rng.gen_range(min..max);
         let row_size = rng.gen_range(min..max);
         let placement_cols = rng.gen_range(1..self.cols - 1 - col_size);
@@ -122,7 +122,7 @@ impl RectanglesRoomBuilder {
         for (i, rect) in ordered_rects.iter().enumerate() {
             for row in rect.rows() {
                 for col in rect.cols() {
-                    let room_idx = room.room_idx(row as i32, col as i32);
+                    let room_idx = room.room_idx(row, col);
                     room.tiles[room_idx] = DungeonTile::Floor;
                 }
             }
@@ -144,7 +144,7 @@ impl RectanglesRoomBuilder {
         }
     }
 
-    fn apply_vertical_tunnel(&self, room: &mut DungeonRoom, row1: i32, row2: i32, col: i32) {
+    fn apply_vertical_tunnel(&self, room: &mut DungeonRoom, row1: usize, row2: usize, col: usize) {
         use std::cmp::{max, min};
         for row in min(row1, row2)..=max(row1, row2) {
             let idx = room.room_idx(row, col);
@@ -152,7 +152,13 @@ impl RectanglesRoomBuilder {
         }
     }
 
-    fn apply_horizontal_tunnel(&self, room: &mut DungeonRoom, col1: i32, col2: i32, row: i32) {
+    fn apply_horizontal_tunnel(
+        &self,
+        room: &mut DungeonRoom,
+        col1: usize,
+        col2: usize,
+        row: usize,
+    ) {
         use std::cmp::{max, min};
         for col in min(col1, col2)..=max(col1, col2) {
             let idx = room.room_idx(row, col);
@@ -170,7 +176,7 @@ pub enum Granularity {
 }
 
 impl Granularity {
-    pub fn size_and_number_ranges(&self, rows: i32, cols: i32) -> (i32, i32, i32) {
+    pub fn size_and_number_ranges(&self, rows: usize, cols: usize) -> (usize, usize, usize) {
         let base = rows.min(cols);
         let (min, max, number) = match self {
             Granularity::Small => (base / 8, base / 5, 8),
@@ -206,15 +212,15 @@ mod test {
 
         let room = sut.create_room(&mut rng, &room_config);
 
-        let expected_tiles = "##....####
-##......##
-##..##..##
-#.......##
-#..###..##
+        let expected_tiles = "#####.####
+###......#
+###......#
+###..#####
+#........#
 #.........
-#.#####..#
-#......###
-#......###
+#...######
+###..#####
+###..#####
 ##########"
             .to_string();
         let room_tile_str = print_room(room.rows as usize, room.columns as usize, room.tiles, 0, 0);

@@ -13,8 +13,8 @@ pub enum Mode {
 
 #[derive(Clone, Debug)]
 pub struct DrunkardRoomBuilder {
-    pub rows: i32,
-    pub cols: i32,
+    pub rows: usize,
+    pub cols: usize,
     pub iterations: u8,
     pub steps: u8,
     pub mode: Mode,
@@ -60,18 +60,19 @@ impl RoomBuilder for DrunkardRoomBuilder {
         room
     }
 
-    fn get_cols(&self) -> i32 {
+    fn get_cols(&self) -> usize {
         self.cols
     }
 
-    fn get_rows(&self) -> i32 {
+    fn get_rows(&self) -> usize {
         self.rows
     }
 }
 
 impl DrunkardRoomBuilder {
-    fn drunkard(&self, start: (i32, i32), rng: &mut Pcg64, room: &mut DungeonRoom) {
-        let mut drunkard_pos = start.clone();
+    fn drunkard(&self, start: (usize, usize), rng: &mut Pcg64, room: &mut DungeonRoom) {
+        let next_start = start.clone();
+        let mut drunkard_pos = (next_start.0 as i32, next_start.1 as i32);
         let mut distance_staggered = 0;
         let dug_tile = match self.mode {
             Mode::FindExits => DungeonTile::Floor,
@@ -79,7 +80,11 @@ impl DrunkardRoomBuilder {
         };
 
         loop {
-            let drunk_idx = room.room_idx(drunkard_pos.0, drunkard_pos.1);
+            if drunkard_pos.0 < 0 || drunkard_pos.1 < 0 {
+                panic!("dunkard has negative coordinates")
+            }
+
+            let drunk_idx = room.room_idx(drunkard_pos.0 as usize, drunkard_pos.1 as usize);
             room.tiles[drunk_idx] = dug_tile;
             match rng.gen_range(0..4) {
                 0 => drunkard_pos.0 -= 1,
@@ -88,8 +93,12 @@ impl DrunkardRoomBuilder {
                 _ => drunkard_pos.1 += 1,
             }
 
+            if drunkard_pos.0 < 0 || drunkard_pos.1 < 0 {
+                break;
+            }
+
             if !room.in_bounds(drunkard_pos.0, drunkard_pos.1)
-                || room.is_corner(drunkard_pos.0, drunkard_pos.1)
+                || room.is_corner(drunkard_pos.0 as usize, drunkard_pos.1 as usize)
             {
                 // difficult to handle corner exits, since they could point in 2 directions; avoid this case
                 break;
@@ -136,7 +145,7 @@ impl DrunkardRoomBuilder {
         room: &DungeonRoom,
         exits_hit: &Vec<Direction3D>,
         exits_to_hit: &Vec<Direction3D>,
-    ) -> (i32, i32) {
+    ) -> (usize, usize) {
         let center = (self.rows / 2, self.cols / 2);
         if self.mode == Mode::ReverseCenter {
             return center;

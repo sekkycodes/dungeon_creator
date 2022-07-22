@@ -43,12 +43,12 @@ impl RoomBuilder for GridRoomBuilder {
         room
     }
 
-    fn get_rows(&self) -> i32 {
-        (self.rect_size.vertical * self.rects.vertical + self.rects.vertical + 1) as i32
+    fn get_rows(&self) -> usize {
+        self.rect_size.vertical * self.rects.vertical + self.rects.vertical + 1
     }
 
-    fn get_cols(&self) -> i32 {
-        (self.rect_size.horizontal * self.rects.horizontal + self.rects.horizontal + 1) as i32
+    fn get_cols(&self) -> usize {
+        self.rect_size.horizontal * self.rects.horizontal + self.rects.horizontal + 1
     }
 }
 
@@ -60,10 +60,10 @@ impl GridRoomBuilder {
             for col in 0..(self.rects.horizontal as usize) {
                 let next_col_position = 1 + (col * (self.rect_size.horizontal + 1));
                 rects.push(Rect::new(
-                    next_row_position as i32,
-                    (next_row_position + self.rect_size.vertical - 1) as i32,
-                    next_col_position as i32,
-                    (next_col_position + self.rect_size.horizontal - 1) as i32,
+                    next_row_position,
+                    next_row_position + self.rect_size.vertical - 1,
+                    next_col_position,
+                    next_col_position + self.rect_size.horizontal - 1,
                 ));
             }
         }
@@ -89,7 +89,7 @@ impl GridRoomBuilder {
         for rect in rects {
             for col in rect.cols() {
                 for row in rect.rows() {
-                    let idx = room.room_idx(row as i32, col as i32);
+                    let idx = room.room_idx(row, col);
                     room.tiles[idx] = DungeonTile::Floor;
                 }
             }
@@ -115,7 +115,7 @@ impl GridRoomBuilder {
                 match rng.gen_range(0..4) {
                     0 => {
                         for i in 0..self.rect_size.vertical {
-                            let room_idx = room.room_idx(rect.row1 + i as i32, rect.col2 + 1);
+                            let room_idx = room.room_idx(rect.row1 + i, rect.col2 + 1);
                             room.tiles[room_idx] = DungeonTile::Floor
                         }
                     }
@@ -131,7 +131,7 @@ impl GridRoomBuilder {
                 match rng.gen_range(0..4) {
                     0 => {
                         for i in 0..self.rect_size.horizontal {
-                            let room_idx = room.room_idx(rect.row2 + 1, rect.col1 + i as i32);
+                            let room_idx = room.room_idx(rect.row2 + 1, rect.col1 + i);
                             room.tiles[room_idx] = DungeonTile::Floor
                         }
                     }
@@ -218,7 +218,7 @@ impl GridRoomBuilder {
 
 #[cfg(test)]
 mod test {
-    use crate::room::{math::Position, print::print_room};
+    use crate::room::{math::UPosition, print::print_room};
 
     use super::*;
     use rand::prelude::*;
@@ -354,19 +354,19 @@ E.......#.......#...#...#...#
         let rects = sut.create_rects();
 
         assert_eq!(
-            Position::new(10, 6),
+            UPosition::new(10, 6),
             sut.side_center_rect(Direction3D::Bottom, &rects).center()
         );
         assert_eq!(
-            Position::new(2, 6),
+            UPosition::new(2, 6),
             sut.side_center_rect(Direction3D::Top, &rects).center()
         );
         assert_eq!(
-            Position::new(6, 2),
+            UPosition::new(6, 2),
             sut.side_center_rect(Direction3D::Left, &rects).center()
         );
         assert_eq!(
-            Position::new(6, 10),
+            UPosition::new(6, 10),
             sut.side_center_rect(Direction3D::Right, &rects).center()
         );
     }

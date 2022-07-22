@@ -6,8 +6,8 @@ use crate::{direction::Direction3D, floor::floor_architecture::FloorRoom};
 use super::{room::DungeonRoom, room_builder::RoomBuilder, tile::DungeonTile};
 
 pub struct AutomataRoomBuilder {
-    pub rows: i32,
-    pub cols: i32,
+    pub rows: usize,
+    pub cols: usize,
     pub wall_percent: u8,
     pub iterations: u8,
 }
@@ -46,11 +46,11 @@ impl RoomBuilder for AutomataRoomBuilder {
         room
     }
 
-    fn get_cols(&self) -> i32 {
+    fn get_cols(&self) -> usize {
         self.cols
     }
 
-    fn get_rows(&self) -> i32 {
+    fn get_rows(&self) -> usize {
         self.rows
     }
 }
@@ -93,12 +93,12 @@ impl AutomataRoomBuilder {
         dungeon_tiles
     }
 
-    fn count_neighbors(&self, x: i32, y: i32, room: &DungeonRoom) -> usize {
+    fn count_neighbors(&self, x: usize, y: usize, room: &DungeonRoom) -> usize {
         let mut neighbors = 0;
-        for iy in -1..=1 {
-            for ix in -1..=1 {
-                if !(ix == 0 && iy == 0)
-                    && room.tiles[room.room_idx(x + ix, y + iy)] == DungeonTile::Wall
+        for iy in 0..=2 {
+            for ix in 0..=2 {
+                if !(ix == 1 && iy == 1)
+                    && room.tiles[room.room_idx(x + ix - 1, y + iy - 1)] == DungeonTile::Wall
                 {
                     neighbors += 1
                 }

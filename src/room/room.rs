@@ -9,8 +9,8 @@ pub struct DungeonRoom {
     pub tiles: Vec<DungeonTile>,
     pub exits: Vec<usize>,
     pub pathing: Vec<usize>,
-    pub rows: i32,
-    pub columns: i32,
+    pub rows: usize,
+    pub columns: usize,
     pub exit_directions: Vec<Direction3D>,
     pub stair_up: bool,
     pub stair_down: bool,
@@ -32,23 +32,27 @@ impl Default for DungeonRoom {
 }
 
 impl DungeonRoom {
-    pub fn room_idx(&self, row: i32, col: i32) -> usize {
+    pub fn room_idx(&self, row: usize, col: usize) -> usize {
         ((row * self.columns) + col) as usize
     }
 
-    pub fn col(&self, idx: usize) -> i32 {
-        (idx as i32) % self.columns
+    pub fn col(&self, idx: usize) -> usize {
+        idx % self.columns
     }
 
-    pub fn row(&self, idx: usize) -> i32 {
-        (idx as i32) / self.columns
+    pub fn row(&self, idx: usize) -> usize {
+        idx / self.columns
     }
 
     pub fn in_bounds(&self, row: i32, col: i32) -> bool {
-        row >= 0 && row < self.rows && col >= 0 && col < self.columns
+        if row < 0 || col < 0 {
+            return false;
+        }
+
+        (row as usize) < self.rows && (col as usize) < self.columns
     }
 
-    pub fn is_corner(&self, row: i32, col: i32) -> bool {
+    pub fn is_corner(&self, row: usize, col: usize) -> bool {
         let corner_coords = vec![
             (0, 0),
             (&self.rows - 1, 0),
@@ -299,9 +303,9 @@ mod test {
         let sut = build_sut();
 
         assert_eq!(sut.in_bounds(-1, 1), false);
-        assert_eq!(sut.in_bounds(sut.columns, 1), false);
+        assert_eq!(sut.in_bounds(sut.columns as i32, 1), false);
         assert_eq!(sut.in_bounds(1, -1), false);
-        assert_eq!(sut.in_bounds(1, sut.rows), false);
+        assert_eq!(sut.in_bounds(1, sut.rows as i32), false);
     }
 
     #[test]
@@ -309,7 +313,10 @@ mod test {
         let sut = build_sut();
 
         assert_eq!(sut.in_bounds(0, 0), true);
-        assert_eq!(sut.in_bounds(sut.columns - 1, sut.rows - 1), true);
+        assert_eq!(
+            sut.in_bounds((sut.columns - 1) as i32, (sut.rows - 1) as i32),
+            true
+        );
     }
 
     #[test]

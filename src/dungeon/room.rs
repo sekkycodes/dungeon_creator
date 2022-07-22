@@ -9,8 +9,8 @@ use super::coords::DungeonCoordinates;
 pub struct ArrangedDungeonRoom {
     pub tiles: Vec<DungeonTile>,
     pub pathing: Vec<usize>,
-    pub rows: i32,
-    pub columns: i32,
+    pub rows: usize,
+    pub columns: usize,
     pub dungeon_coords: DungeonCoordinates,
     pub entry: Option<(usize, Direction3D)>,
     pub exits: Vec<(usize, Direction3D)>,
@@ -52,16 +52,16 @@ impl ArrangedDungeonRoom {
         }
     }
 
-    pub fn room_idx(&self, row: i32, col: i32) -> usize {
-        ((row * self.columns) + col) as usize
+    pub fn room_idx(&self, row: usize, col: usize) -> usize {
+        (row * self.columns) + col
     }
 
-    pub fn col(&self, idx: usize) -> i32 {
-        (idx as i32) % self.columns
+    pub fn col(&self, idx: usize) -> usize {
+        idx % self.columns
     }
 
-    pub fn row(&self, idx: usize) -> i32 {
-        (idx as i32) / self.columns
+    pub fn row(&self, idx: usize) -> usize {
+        idx / self.columns
     }
 
     pub fn border_path_tiles(&self, direction: Direction3D) -> Vec<usize> {

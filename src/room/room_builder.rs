@@ -9,9 +9,9 @@ use crate::{
 pub trait RoomBuilder {
     fn create_room(&self, rng: &mut Pcg64, room_config: &FloorRoom) -> DungeonRoom;
 
-    fn get_rows(&self) -> i32;
+    fn get_rows(&self) -> usize;
 
-    fn get_cols(&self) -> i32;
+    fn get_cols(&self) -> usize;
 
     fn get_hit_exits(&self, room: &DungeonRoom) -> Vec<Direction3D> {
         let mut directions = vec![];
@@ -130,11 +130,11 @@ pub mod test {
             create_horizontal_hallway()
         }
 
-        fn get_rows(&self) -> i32 {
+        fn get_rows(&self) -> usize {
             3
         }
 
-        fn get_cols(&self) -> i32 {
+        fn get_cols(&self) -> usize {
             3
         }
     }

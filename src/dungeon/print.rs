@@ -233,8 +233,8 @@ pub mod test {
 
     fn create_room(row: i32, col: i32, floor: i32, size: usize) -> ArrangedDungeonRoom {
         ArrangedDungeonRoom {
-            columns: size as i32,
-            rows: size as i32,
+            columns: size,
+            rows: size,
             dungeon_coords: DungeonCoordinates {
                 row,
                 col,

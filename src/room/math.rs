@@ -2,14 +2,14 @@ use std::{cmp::Ordering, ops::RangeInclusive};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Rect {
-    pub row1: i32,
-    pub row2: i32,
-    pub col1: i32,
-    pub col2: i32,
+    pub row1: usize,
+    pub row2: usize,
+    pub col1: usize,
+    pub col2: usize,
 }
 
 impl Rect {
-    pub fn new(row1: i32, row2: i32, col1: i32, col2: i32) -> Self {
+    pub fn new(row1: usize, row2: usize, col1: usize, col2: usize) -> Self {
         Self {
             row1,
             row2,
@@ -27,8 +27,8 @@ impl Rect {
     }
 
     // Returns the center of the rectangle
-    pub fn center(&self) -> Position {
-        Position::new((self.row1 + self.row2) / 2, (self.col1 + self.col2) / 2)
+    pub fn center(&self) -> UPosition {
+        UPosition::new((self.row1 + self.row2) / 2, (self.col1 + self.col2) / 2)
     }
 
     pub fn rows(&self) -> RangeInclusive<usize> {
@@ -37,6 +37,36 @@ impl Rect {
 
     pub fn cols(&self) -> RangeInclusive<usize> {
         (self.col1 as usize)..=(self.col2 as usize)
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct UPosition {
+    pub row: usize,
+    pub col: usize,
+}
+
+impl UPosition {
+    pub fn new(row: usize, col: usize) -> Self {
+        Self { row, col }
+    }
+}
+
+impl Default for UPosition {
+    fn default() -> Self {
+        Self::new(0, 0)
+    }
+}
+
+impl PartialOrd for UPosition {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for UPosition {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.row, self.col).cmp(&(other.row, other.col))
     }
 }
 
@@ -55,18 +85,6 @@ impl Position {
 impl Default for Position {
     fn default() -> Self {
         Self::new(0, 0)
-    }
-}
-
-impl PartialOrd for Position {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Position {
-    fn cmp(&self, other: &Self) -> Ordering {
-        (self.row, self.col).cmp(&(other.row, other.col))
     }
 }
 
@@ -118,12 +136,12 @@ mod test {
     #[test]
     fn rect_calculates_its_center_position() {
         let rect = Rect::new(4, 6, 4, 6);
-        assert_eq!(Position::new(5, 5), rect.center());
+        assert_eq!(UPosition::new(5, 5), rect.center());
     }
 
     #[test]
     fn rect_rounds_down_center_position() {
         let rect = Rect::new(4, 5, 4, 5);
-        assert_eq!(Position::new(4, 4), rect.center());
+        assert_eq!(UPosition::new(4, 4), rect.center());
     }
 }
