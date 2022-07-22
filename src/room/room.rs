@@ -61,8 +61,8 @@ impl DungeonRoom {
 
     pub fn side_indexes(&self, direction: &Direction3D) -> Vec<usize> {
         match direction {
-            Direction3D::Bottom => (0..(self.rows as usize)).collect(),
-            Direction3D::Top => {
+            Direction3D::Top => (0..(self.rows as usize)).collect(),
+            Direction3D::Bottom => {
                 (self.tiles.len() - (self.columns as usize)..self.tiles.len()).collect()
             }
             Direction3D::Left => (0..self.tiles.len())
@@ -122,7 +122,7 @@ impl DungeonRoom {
             let col = self.col(exit_tile.clone());
 
             if row == 0 {
-                result.insert(Direction3D::Bottom);
+                result.insert(Direction3D::Top);
             }
 
             if col == 0 {
@@ -130,7 +130,7 @@ impl DungeonRoom {
             }
 
             if row == self.rows - 1 {
-                result.insert(Direction3D::Top);
+                result.insert(Direction3D::Bottom);
             }
 
             if col == self.columns - 1 {
@@ -147,7 +147,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn side_indexes_for_tiles_of_up_direction() {
+    fn side_indexes_for_tiles_of_top_direction() {
         let sut = DungeonRoom {
             tiles: vec![DungeonTile::Floor; 25],
             columns: 5,
@@ -155,7 +155,7 @@ mod test {
             ..Default::default()
         };
 
-        let expect_up = vec![20, 21, 22, 23, 24];
+        let expect_up = vec![0, 1, 2, 3, 4];
         let result_up = sut.side_indexes(&Direction3D::Top);
         assert_eq!(
             expect_up, result_up,
@@ -165,7 +165,7 @@ mod test {
     }
 
     #[test]
-    fn side_indexes_for_tiles_of_down_direction() {
+    fn side_indexes_for_tiles_of_bottom_direction() {
         let sut = DungeonRoom {
             tiles: vec![DungeonTile::Floor; 25],
             columns: 5,
@@ -173,7 +173,7 @@ mod test {
             ..Default::default()
         };
 
-        let expected = vec![0, 1, 2, 3, 4];
+        let expected = vec![20, 21, 22, 23, 24];
         let result = sut.side_indexes(&Direction3D::Bottom);
         assert_eq!(
             expected, result,

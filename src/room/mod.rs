@@ -4,6 +4,7 @@ pub mod grid;
 pub mod math;
 pub mod pathfinding;
 pub mod print;
+pub mod rectangles;
 pub mod room;
 pub mod room_builder;
 pub mod tile;
