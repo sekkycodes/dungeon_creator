@@ -1,3 +1,4 @@
+pub mod automata;
 pub mod math;
 pub mod pathfinding;
 pub mod print;
