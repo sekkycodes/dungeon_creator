@@ -27,7 +27,7 @@ pub fn print_room(
                 } else if *t == DungeonTile::Wall {
                     '#'
                 } else if *t == DungeonTile::Exit {
-                    'e'
+                    'E'
                 } else if *t == DungeonTile::StairsDown {
                     'v'
                 } else if *t == DungeonTile::StairsUp {
@@ -87,7 +87,7 @@ mod test {
                 DungeonTile::StairsUp,
                 DungeonTile::StairsDown,
                 DungeonTile::Wall,
-                DungeonTile::Exit,
+                DungeonTile::Wall,
                 DungeonTile::Wall,
             ],
             columns: 3,
@@ -98,7 +98,7 @@ mod test {
         let result = print_room(room.rows as usize, room.columns as usize, room.tiles, 0, 0);
 
         println!("{}", result);
-        assert_eq!("#e#\n.^v\n#e#", result);
+        assert_eq!("#E#\n.^v\n###", result);
     }
 
     #[test]
