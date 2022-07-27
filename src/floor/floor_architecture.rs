@@ -148,11 +148,11 @@ fn get_exits(all_coords: &Vec<RoomCoordinates>) -> Vec<(&RoomCoordinates, Vec<Di
             exits.push(Direction3D::Left);
         }
 
-        if all_coords.contains(&coords.clone_delta_row(1)) {
+        if all_coords.contains(&coords.clone_delta_row(-1)) {
             exits.push(Direction3D::Top);
         }
 
-        if all_coords.contains(&coords.clone_delta_row(-1)) {
+        if all_coords.contains(&coords.clone_delta_row(1)) {
             exits.push(Direction3D::Bottom);
         }
 
@@ -202,5 +202,20 @@ mod test {
             result.rooms[5].exits // col-1/row3
         );
         assert_eq!(0, result.floor);
+    }
+
+    #[test]
+    fn calculates_exits_given_a_set_of_rooms_coordinates() {
+        let room_coords = vec![
+            RoomCoordinates { col: 1, row: 1 },
+            RoomCoordinates { col: 0, row: 1 },
+            RoomCoordinates { col: 0, row: 0 },
+        ];
+        let results = get_exits(&room_coords);
+
+        assert_eq!(3, results.len());
+        assert_eq!(vec![Direction3D::Left], results[0].1);
+        assert_eq!(vec![Direction3D::Right, Direction3D::Top], results[1].1);
+        assert_eq!(vec![Direction3D::Bottom], results[2].1);
     }
 }
