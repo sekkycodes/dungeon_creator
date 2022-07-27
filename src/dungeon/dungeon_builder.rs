@@ -66,6 +66,10 @@ pub trait DungeonBuilder {
             return;
         }
 
+        if directions.len() == 0 {
+            return;
+        }
+
         for direction in directions {
             let tiles = room.border_path_tiles(*direction);
             let center_tile = tiles[tiles.len() / 2];
@@ -101,6 +105,63 @@ pub trait DungeonBuilder {
 
         if target_tile > 0 {
             room.tiles[target_tile as usize] = stair_tile;
+        }
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use crate::room::automata::AutomataRoomBuilder;
+
+    use super::*;
+
+    #[test]
+    pub fn creates_printable_dungeon() {
+        let sut = DummyDungeonBuilder {};
+        let mut rng = Pcg64::seed_from_u64(1);
+
+        let rooms = sut.create_dungeon(&mut rng);
+
+        assert_ne!(0, rooms.len());
+    }
+
+    struct DummyDungeonBuilder {}
+
+    impl DummyDungeonBuilder {
+        pub fn create_dungeon(&self, rng: &mut rand_pcg::Pcg64) -> Vec<ArrangedDungeonRoom> {
+            let layout = self.layout(rng);
+
+            let mut all_rooms: Vec<ArrangedDungeonRoom> = vec![];
+            for floor in layout.floors {
+                let mut rooms =
+                    self.create_rooms(rng, vec![Box::new(AutomataRoomBuilder::default())], &floor);
+                all_rooms.append(&mut rooms);
+            }
+
+            all_rooms
+        }
+    }
+
+    impl DungeonBuilder for DummyDungeonBuilder {
+        fn create_dungeon_floor(
+            &self,
+            rng: &mut rand_pcg::Pcg64,
+            floor_layout: &crate::floor::floor_architecture::FloorLayout,
+        ) -> Vec<crate::dungeon::room::ArrangedDungeonRoom> {
+            let room_builder = AutomataRoomBuilder {
+                rows: 20,
+                cols: 20,
+                wall_percent: 40,
+                iterations: 2,
+            };
+
+            self.create_rooms(rng, vec![Box::new(room_builder)], floor_layout)
+        }
+
+        fn get_layout_config(&self) -> crate::dungeon::layout::DungeonLayoutConfig {
+            DungeonLayoutConfig {
+                ..Default::default()
+            }
         }
     }
 }

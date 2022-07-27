@@ -77,11 +77,11 @@ impl ArrangedDungeonRoom {
     }
 
     fn top(&self, tile: usize) -> bool {
-        self.row(tile) == self.rows - 1
+        self.row(tile) == 0
     }
 
     fn bottom(&self, tile: usize) -> bool {
-        self.row(tile) == 0
+        self.row(tile) == self.rows - 1
     }
 
     fn left(&self, tile: usize) -> bool {
@@ -98,7 +98,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn returns_vec_of_upper_tiles() {
+    fn returns_vec_of_border_tiles() {
         let sut = ArrangedDungeonRoom {
             columns: 3,
             rows: 4,
@@ -107,7 +107,7 @@ mod test {
             ..Default::default()
         };
 
-        let down = sut.border_path_tiles(Direction3D::Bottom);
+        let down = sut.border_path_tiles(Direction3D::Top);
         let left = sut.border_path_tiles(Direction3D::Left);
 
         assert_eq!(vec![0, 1], down);

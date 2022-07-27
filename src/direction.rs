@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Direction3D {
     Top,
@@ -20,6 +22,12 @@ impl Direction3D {
             Self::Down => Self::Up,
             Self::None => Self::None,
         }
+    }
+}
+
+impl fmt::Display for Direction3D {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
