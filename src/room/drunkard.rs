@@ -180,6 +180,8 @@ impl DrunkardRoomBuilder {
 
 #[cfg(test)]
 mod test {
+    use crate::room::print::print_room;
+
     use super::*;
 
     #[test]
@@ -269,6 +271,40 @@ mod test {
         assert_eq!(result.tiles.len(), 225);
         assert_eq!(result.columns, 15);
         assert_eq!(result.rows, 15);
+    }
+
+    #[test]
+    fn creates_printable_room() {
+        let mut rng = Pcg64::seed_from_u64(1);
+        let mut sut = create_sut();
+        sut.rows = 15;
+        sut.cols = 15;
+        let room_config = FloorRoom {
+            exits: vec![Direction3D::Bottom],
+            ..Default::default()
+        };
+
+        let result = sut.create_room(&mut rng, &room_config);
+        let output = print_room(result.rows, result.columns, result.tiles, 0, 0);
+
+        assert_eq!(
+            "#.#############
+#..############
+#..############
+##.############
+#..############
+#..############
+#..############
+#.......#######
+####...########
+###############
+###############
+###############
+###############
+###############
+###############",
+            output
+        );
     }
 
     #[test]

@@ -133,7 +133,7 @@ mod test {
     use crate::{
         direction::Direction3D,
         floor::floor_architecture::FloorRoom,
-        room::{room::DungeonRoom, tile::DungeonTile},
+        room::{print::print_room, room::DungeonRoom, tile::DungeonTile},
     };
 
     use super::*;
@@ -148,6 +148,36 @@ mod test {
             let result = fixture.sut.create_room(&mut fixture.rng, &room_config);
             assert_eq!(result.tiles.len(), 9);
         })
+    }
+
+    #[test]
+    fn creates_printable_room() {
+        let sut = AutomataRoomBuilder {
+            cols: 7,
+            rows: 7,
+            iterations: 20,
+            wall_percent: 30,
+            ..Default::default()
+        };
+        let room_config = FloorRoom {
+            exits: vec![Direction3D::Top, Direction3D::Left],
+            ..Default::default()
+        };
+        let mut rng = Pcg64::seed_from_u64(1);
+
+        let result = sut.create_room(&mut rng, &room_config);
+        let output = print_room(result.rows, result.columns, result.tiles, 0, 0);
+
+        assert_eq!(
+            "#.#..##
+......#
+#.###.#
+.....##
+#.....#
+#.....#
+#######",
+            output
+        );
     }
 
     #[test]
