@@ -3,7 +3,7 @@ use rand_pcg::Pcg64;
 
 use crate::floor::floor_architecture::FloorRoom;
 
-use super::{math::Rect, room::DungeonRoom, room_builder::RoomBuilder, tile::DungeonTile};
+use super::{math::URect, room::DungeonRoom, room_builder::RoomBuilder, tile::DungeonTile};
 
 #[derive(Clone, Debug)]
 pub struct RectanglesRoomBuilder {
@@ -41,7 +41,7 @@ impl RoomBuilder for RectanglesRoomBuilder {
             let side_center = side_tile_idxes[side_tile_idxes.len() / 2];
             let col = room.col(side_center);
             let row = room.row(side_center);
-            rects.push(Rect::new(row, row, col, col));
+            rects.push(URect::new(row, row, col, col));
         }
 
         rects.sort_by(|r1, r2| r1.center().cmp(&r2.center()));
@@ -60,9 +60,9 @@ impl RoomBuilder for RectanglesRoomBuilder {
 }
 
 impl RectanglesRoomBuilder {
-    fn create_rects(&self, rng: &mut Pcg64) -> Vec<Rect> {
+    fn create_rects(&self, rng: &mut Pcg64) -> Vec<URect> {
         if self.granularity == Granularity::Full {
-            return vec![Rect::new(1, self.rows - 2, 1, self.cols - 2)];
+            return vec![URect::new(1, self.rows - 2, 1, self.cols - 2)];
         }
 
         let (min, max, number) = self
@@ -89,8 +89,8 @@ impl RectanglesRoomBuilder {
         min: usize,
         max: usize,
         rng: &mut Pcg64,
-        existing_rects: &Vec<Rect>,
-    ) -> Option<Rect> {
+        existing_rects: &Vec<URect>,
+    ) -> Option<URect> {
         let rect = self.create_rect(min, max, rng);
 
         for existing_rect in existing_rects {
@@ -102,12 +102,12 @@ impl RectanglesRoomBuilder {
         Some(rect)
     }
 
-    fn create_rect(&self, min: usize, max: usize, rng: &mut Pcg64) -> Rect {
+    fn create_rect(&self, min: usize, max: usize, rng: &mut Pcg64) -> URect {
         let col_size = rng.gen_range(min..max);
         let row_size = rng.gen_range(min..max);
         let placement_cols = rng.gen_range(1..self.cols - 1 - col_size);
         let placement_rows = rng.gen_range(1..self.rows - 1 - row_size);
-        Rect::new(
+        URect::new(
             placement_rows,
             placement_rows + row_size,
             placement_cols,
@@ -115,7 +115,12 @@ impl RectanglesRoomBuilder {
         )
     }
 
-    fn fill_and_build_corridors(&self, room: &mut DungeonRoom, rects: &Vec<Rect>, rng: &mut Pcg64) {
+    fn fill_and_build_corridors(
+        &self,
+        room: &mut DungeonRoom,
+        rects: &Vec<URect>,
+        rng: &mut Pcg64,
+    ) {
         let mut ordered_rects = rects.clone();
         ordered_rects.sort_by(|a, b| a.center().cmp(&b.center()));
 

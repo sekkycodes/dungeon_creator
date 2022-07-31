@@ -4,7 +4,7 @@ use rand_pcg::Pcg64;
 use crate::{direction::Direction3D, floor::floor_architecture::FloorRoom};
 
 use super::{
-    math::{Dimension, Rect},
+    math::{Dimension, URect},
     room::DungeonRoom,
     room_builder::RoomBuilder,
     tile::DungeonTile,
@@ -53,13 +53,13 @@ impl RoomBuilder for GridRoomBuilder {
 }
 
 impl GridRoomBuilder {
-    fn create_rects(&self) -> Vec<Rect> {
+    fn create_rects(&self) -> Vec<URect> {
         let mut rects = vec![];
         for row in 0..(self.rects.vertical as usize) {
             let next_row_position = 1 + (row * (self.rect_size.vertical + 1));
             for col in 0..(self.rects.horizontal as usize) {
                 let next_col_position = 1 + (col * (self.rect_size.horizontal + 1));
-                rects.push(Rect::new(
+                rects.push(URect::new(
                     next_row_position,
                     next_row_position + self.rect_size.vertical - 1,
                     next_col_position,
@@ -71,7 +71,7 @@ impl GridRoomBuilder {
         rects
     }
 
-    fn room_from_rects(&self, rng: &mut Pcg64, rects: &Vec<Rect>) -> DungeonRoom {
+    fn room_from_rects(&self, rng: &mut Pcg64, rects: &Vec<URect>) -> DungeonRoom {
         let mut room = DungeonRoom {
             tiles: vec![DungeonTile::Wall; (self.get_cols() * self.get_rows()) as usize],
             columns: self.get_cols(),
@@ -85,7 +85,7 @@ impl GridRoomBuilder {
         room
     }
 
-    fn fill(&self, room: &mut DungeonRoom, rects: &Vec<Rect>) {
+    fn fill(&self, room: &mut DungeonRoom, rects: &Vec<URect>) {
         for rect in rects {
             for col in rect.cols() {
                 for row in rect.rows() {
@@ -96,7 +96,7 @@ impl GridRoomBuilder {
         }
     }
 
-    fn connect(&self, room: &mut DungeonRoom, rects: &Vec<Rect>, rng: &mut Pcg64) {
+    fn connect(&self, room: &mut DungeonRoom, rects: &Vec<URect>, rng: &mut Pcg64) {
         let align = match rng.gen_range(0..2) {
             0 => Alignment::Vertically,
             _ => Alignment::Horizontally,
@@ -175,7 +175,7 @@ impl GridRoomBuilder {
         self.rects.horizontal * self.rects.vertical
     }
 
-    fn set_exits(&self, room: &mut DungeonRoom, exits: &Vec<Direction3D>, rects: &Vec<Rect>) {
+    fn set_exits(&self, room: &mut DungeonRoom, exits: &Vec<Direction3D>, rects: &Vec<URect>) {
         for direction in exits {
             let rect = self.side_center_rect(*direction, rects);
             let room_idx = match direction {
@@ -191,13 +191,13 @@ impl GridRoomBuilder {
     }
 
     // Finds the rectangle at the center of one side within the given rectangles
-    fn side_center_rect(&self, direction: Direction3D, rects: &Vec<Rect>) -> Rect {
+    fn side_center_rect(&self, direction: Direction3D, rects: &Vec<URect>) -> URect {
         let side_rects = self.side_rects(direction, rects);
         side_rects[side_rects.len() / 2]
     }
 
     // Finds all rectangles to one side of the given rectangles
-    fn side_rects(&self, direction: Direction3D, rects: &Vec<Rect>) -> Vec<Rect> {
+    fn side_rects(&self, direction: Direction3D, rects: &Vec<URect>) -> Vec<URect> {
         match direction {
             Direction3D::Top => rects.iter().filter(|r| r.row1 == 1).map(|r| *r).collect(),
             Direction3D::Bottom => rects

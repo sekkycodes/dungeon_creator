@@ -13,6 +13,10 @@ use super::{
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 
+/// Builder trait for creating dungeons.
+/// The building result is a vector of rooms with dungeon coordinates, exits, and stairs.
+///
+/// The intended use is for the concrete implementation to provide a layout configuration and set the room builders for the dungeon.
 pub trait DungeonBuilder {
     fn layout(&self, rng: &mut Pcg64) -> DungeonLayout {
         let architect = DungeonArchitect {
@@ -111,6 +115,8 @@ pub trait DungeonBuilder {
 
 #[cfg(test)]
 pub mod test {
+    use std::{fs, path::PathBuf};
+
     use crate::{dungeon::print::print_dungeon, room::automata::AutomataRoomBuilder};
 
     use super::*;
@@ -119,53 +125,45 @@ pub mod test {
     pub fn creates_printable_dungeon() {
         let sut = DummyDungeonBuilder {};
         let mut rng = Pcg64::seed_from_u64(1);
-
         let rooms = sut.create_dungeon(&mut rng);
 
         let output = print_dungeon(rooms.iter().map(|r| r).collect());
+
+        let expected_output = resource_file_content("dungeon_output_1.txt");
         println!("{}", output);
-        assert_eq!(
-            "=== FLOOR 0 ===
-
- ################ ################ 
- #.#............. #.......#......# 
- #.#........##... ....##.......#.# 
- #.#.#.#......... ....##.#.....#.# 
- #.#...#####.#... #...##.......#.# 
- #.####.......#.. ....###......#.# 
- #.#............. #.#...#.#.####.# 
- #.....#.#...##.# ..#.......#....# 
- #..####.....###E E.#..#..###....# 
- #..####..#..##.. #.#..#.........# 
- #..####....###.. ..#..#.#...#.#.# 
- ##..##...#.##.#. #.#....###.#...# 
- ##........####.. ......###..##### 
- ####............ .......#...##### 
- #....##..###...# #......#.......# 
- ################ #.#..##E..####.# 
-
-                  ##..#.#..E....## 
-                  #..............# 
-                  ####......##...# 
-                  #.#...#.######## 
-                  #...##########.# 
-                  #....########### 
-                  #...#########..# 
-                  #......######..# 
-                  #........####..# 
-                  #........####..# 
-                  #..#...#..###..# 
-                  #####......#...# 
-                  #.###..#.......# 
-                  #..##.......##.# 
-                  #..#....#.#....# 
-                  ################ 
-
-",
-            output
-        );
+        assert_linewise_eq(&expected_output, &output);
     }
 
+    fn resource_file_content(filename: &str) -> String {
+        let mut test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        test_file.push("resources/test/");
+        test_file.push(filename);
+        let expected_output = fs::read_to_string(test_file).expect("unable to read file");
+        expected_output.replace("\r\n", "\n")
+    }
+
+    fn assert_linewise_eq(expected: &str, actual: &str) {
+        let exp_lines: Vec<&str> = expected.split("\n").into_iter().collect();
+        let act_lines: Vec<&str> = actual.split("\n").into_iter().collect();
+
+        assert_eq!(
+            exp_lines.len(),
+            act_lines.len(),
+            "expected {} lines, but found {} lines",
+            exp_lines.len(),
+            act_lines.len()
+        );
+
+        for idx in 0..exp_lines.len() {
+            assert_eq!(
+                exp_lines[idx], act_lines[idx],
+                "\ndifference in line {}",
+                idx
+            );
+        }
+    }
+
+    /// A dungeon builder implementation for testing purposes
     struct DummyDungeonBuilder {}
 
     impl DummyDungeonBuilder {

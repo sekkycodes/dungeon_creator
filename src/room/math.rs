@@ -1,14 +1,14 @@
 use std::{cmp::Ordering, ops::RangeInclusive};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
-pub struct Rect {
+pub struct URect {
     pub row1: usize,
     pub row2: usize,
     pub col1: usize,
     pub col2: usize,
 }
 
-impl Rect {
+impl URect {
     pub fn new(row1: usize, row2: usize, col1: usize, col2: usize) -> Self {
         Self {
             row1,
@@ -19,7 +19,7 @@ impl Rect {
     }
 
     // Returns true if this overlaps with other
-    pub fn intersect(&self, other: &Rect) -> bool {
+    pub fn intersect(&self, other: &URect) -> bool {
         self.row1 <= other.row2
             && self.row2 >= other.row1
             && self.col1 <= other.col2
@@ -37,6 +37,25 @@ impl Rect {
 
     pub fn cols(&self) -> RangeInclusive<usize> {
         (self.col1 as usize)..=(self.col2 as usize)
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct Rect {
+    pub row: i32,
+    pub height: usize,
+    pub col: i32,
+    pub width: usize,
+}
+
+impl Rect {
+    pub fn new(row: i32, col: i32, height: usize, width: usize) -> Rect {
+        Rect {
+            row,
+            height,
+            col,
+            width,
+        }
     }
 }
 
@@ -109,11 +128,11 @@ mod test {
 
     #[test]
     fn rect_intersect_checks_whether_another_rect_overlaps() {
-        let rect1 = Rect::new(5, 8, 5, 8);
-        let rect2 = Rect::new(5, 8, 5, 8);
-        let rect3 = Rect::new(5, 5, 5, 5);
-        let rect4 = Rect::new(7, 9, 7, 9);
-        let rect5 = Rect::new(9, 9, 10, 10);
+        let rect1 = URect::new(5, 8, 5, 8);
+        let rect2 = URect::new(5, 8, 5, 8);
+        let rect3 = URect::new(5, 5, 5, 5);
+        let rect4 = URect::new(7, 9, 7, 9);
+        let rect5 = URect::new(9, 9, 10, 10);
 
         assert!(rect1.intersect(&rect2)); // overlap due to same placement
         assert!(rect1.intersect(&rect3));
@@ -123,25 +142,25 @@ mod test {
 
     #[test]
     fn rect_rows_returns_range_over_all_row_axis_coordinate_points() {
-        let rect = Rect::new(5, 8, 5, 7);
+        let rect = URect::new(5, 8, 5, 7);
         assert_eq!(5..=8, rect.rows());
     }
 
     #[test]
     fn rect_cols_returns_range_over_all_col_axis_coordinate_points() {
-        let rect = Rect::new(5, 8, 5, 7);
+        let rect = URect::new(5, 8, 5, 7);
         assert_eq!(5..=7, rect.cols());
     }
 
     #[test]
     fn rect_calculates_its_center_position() {
-        let rect = Rect::new(4, 6, 4, 6);
+        let rect = URect::new(4, 6, 4, 6);
         assert_eq!(UPosition::new(5, 5), rect.center());
     }
 
     #[test]
     fn rect_rounds_down_center_position() {
-        let rect = Rect::new(4, 5, 4, 5);
+        let rect = URect::new(4, 5, 4, 5);
         assert_eq!(UPosition::new(4, 4), rect.center());
     }
 }
